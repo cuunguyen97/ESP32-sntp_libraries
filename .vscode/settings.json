@@ -1,3 +1,4 @@
 {
-    "idf.pythonInstallPath": "d:\\esp-idf\\tools\\idf-python\\3.11.2\\python.exe"
+    "idf.pythonInstallPath": "d:\\esp-idf\\tools\\idf-python\\3.11.2\\python.exe",
+    "idf.currentSetup": "c:\\Users\\Cuu Nguyen\\esp\\v5.4.1\\esp-idf"
 }
