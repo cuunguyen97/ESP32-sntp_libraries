@@ -75,29 +75,24 @@ void my_callback(int id) {
     ESP_LOGI("MAIN", "Đến giờ hẹn! ID = %d", id);
 }
 
-void button_event_handler(button_event_info_t *info)
-{
-    ESP_LOGI("MAIN", "Button %d -> ", info->button_id);
+void on_click(uint8_t id, button_click_event_t evt, uint32_t count) {
+    const char *names[] = {"", "Single", "Double", "Triple", "Quad", "Quint"};
+    ESP_LOGI("MAIN", "Button %d: %s click (%ld)\n", id, names[evt], count);
+}
 
-    switch (info->event) {
-        case BUTTON_EVENT_SINGLE_CLICK:
-            ESP_LOGI("MAIN", "SINGLE click\n");
+void on_hold(uint8_t id, button_hold_event_t evt, uint32_t ms) {
+    switch (evt) {
+        case BUTTON_HOLD_START:
+            ESP_LOGI("MAIN", "Button %d: Hold START at %lu ms\n", id, ms);
             break;
-        case BUTTON_EVENT_DOUBLE_CLICK:
-            ESP_LOGI("MAIN", "DOUBLE click\n");
+        case BUTTON_HOLD_TICK:
+            ESP_LOGI("MAIN", "Button %d: Holding... %lu ms (%lu s)\n", id, ms, ms/1000);
             break;
-        case BUTTON_EVENT_TRIPLE_CLICK:
-            ESP_LOGI("MAIN", "TRIPLE click\n");
-            break;
-        case BUTTON_EVENT_LONG_PRESS:
-            ESP_LOGI("MAIN", "LONG PRESS (%.0f s)\n", info->press_duration_ms / 1000.0);
-            break;
-        default:
-            ESP_LOGI("MAIN", "event %d\n", info->event);
+        case BUTTON_HOLD_END:
+            ESP_LOGI("MAIN", "Button %d: Hold END - total %lu ms (%lu s)\n", id, ms, ms/1000);
             break;
     }
 }
-
 static void print_all_schedules(void) {
     schedule_t sch_list[MAX_SCHEDULES];
     int count = 0;
@@ -228,19 +223,17 @@ void app_main(void)
     // Vòng lặp in thời gian + trạng thái
     // -------------------------------------------------------
     // Ví dụ cấu hình 3 nút
-    button_config_t btn_cfgs[] = {
-        { .gpio_num = GPIO_NUM_0, .active_level = BUTTON_ACTIVE_HIGH, .debounce_ms = 35 }
-    };
-    
-    // Khởi tạo
-    button_init(btn_cfgs, 1);
+    button_config_t cfgs[] = {
+            { .gpio_num = GPIO_NUM_0, .active_level = false, .debounce_ms = 50, .multi_click_timeout_ms = 500 },  // nút 1 
+            // thêm nút khác
+        };
 
-    // Đăng ký callback cho từng nút (hoặc cho tất cả cùng một hàm)
-    button_register_callback(0, button_event_handler);
+    button_init(cfgs, 1);
+    button_register_click_callback(0, on_click);
+    button_register_hold_callback(0, on_hold);
     
     control_register_on_callback(my_on);
     control_register_off_callback(my_off);
-
     control_manager_init();
 
 
